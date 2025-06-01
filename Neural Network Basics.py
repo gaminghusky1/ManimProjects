@@ -14,6 +14,12 @@ def sigmoid_derivative(x):
 
 class NeuralNetworkBasics(Scene):
     def construct(self):
+        self.wait(2)
+        neural_networks = Text("Neural Networks")
+        self.play(Write(neural_networks))
+        self.wait(3)
+        self.play(FadeOut(neural_networks))
+        self.wait(1)
         input_neuron = Circle(radius=0.5, color=BLUE).move_to(LEFT * 4.5)
         hidden_neuron1 = Circle(radius=0.5, color=GREEN).move_to(LEFT * 1.5)
         hidden_neuron2 = Circle(radius=0.5, color=GREEN).move_to(RIGHT * 1.5)
@@ -41,12 +47,12 @@ class NeuralNetworkBasics(Scene):
             lines
         )
 
-        self.wait(2)
+        self.wait(4)
 
         terms = [
-            ("Input Layer", input_neuron, DOWN, 2),
-            ("Hidden Layers", hidden_neurons, DOWN, 2),
-            ("Output Layer", output_neuron, DOWN, 2),
+            ("Input Layer", input_neuron, DOWN, 4),
+            ("Hidden Layers", hidden_neurons, DOWN, 4),
+            ("Output Layer", output_neuron, DOWN, 4),
         ]
 
         labels = VGroup()
@@ -76,17 +82,27 @@ class NeuralNetworkBasics(Scene):
             VGroup(weight_labels[1], DecimalNumber(weight_vals[1], num_decimal_places=2).next_to(weight_labels[1], RIGHT, buff=0.2)).next_to(Line(hidden_neuron1.get_right(), hidden_neuron2.get_left()), UP, buff=0.2),
             VGroup(weight_labels[2], DecimalNumber(weight_vals[2], num_decimal_places=2).next_to(weight_labels[2], RIGHT, buff=0.2)).next_to(Line(hidden_neuron2.get_right(), output_neuron.get_left()), UP, buff=0.2),
         )
+        self.play(FadeIn(weight_labels))
+        self.wait(8)
 
-        self.play(Write(weight_groups))
+        self.play(FadeIn(*[weight_group[1] for weight_group in weight_groups]))
 
         self.wait(2)
+        self.play(FadeOut(neural_network, weight_groups))
+        self.wait(4)
+        forward_prop = Text("Forward Propagation")
+        self.play(Write(forward_prop))
+        self.wait(2)
+        self.play(FadeOut(forward_prop))
+        self.wait(1)
+        self.play(FadeIn(neural_network, weight_groups))
 
         activations = VGroup()
         activation_vals = []
         z_labels = VGroup()
         z_vals = []
 
-        def animate_forward_prop(input_val):
+        def animate_forward_prop(input_val, first_time):
             activation_vals.clear()
             z_vals.clear()
             if len(activations) and len(z_labels):
@@ -96,7 +112,7 @@ class NeuralNetworkBasics(Scene):
             a_prev = DecimalNumber(input_val, num_decimal_places=2).move_to(input_neuron.get_center())
             activations.add(VGroup(MathTex(r"a_{0}").next_to(input_neuron, UP, buff=0.2), a_prev))
             activation_vals.append(input_val)
-            self.play(Write(a_prev))
+            self.play(Write(a_prev), FadeIn(activations[0][0]))
             self.wait(0.5)
 
             # Loop over each layer connection
@@ -105,6 +121,9 @@ class NeuralNetworkBasics(Scene):
                 (hidden_neuron1, hidden_neuron2),
                 (hidden_neuron2, output_neuron),
             ]):
+                extra_wait = 0
+                if idx == 0 and first_time:
+                    extra_wait = 1
                 w_mob = weight_groups[idx][1]
                 w_val = weight_vals[idx]
 
@@ -134,12 +153,12 @@ class NeuralNetworkBasics(Scene):
                     FadeIn(z_label)
                 )
                 self.add(expr_group); self.remove(originals)
-                self.wait(0.3)
+                self.wait(0.3 + extra_wait * 2)
                 self.play(FadeIn(eq_sign))
                 expr_group_animator = expr_group.copy()
                 self.play(Transform(expr_group_animator, z_res), run_time=1)
                 self.add(z_res); self.remove(expr_group_animator)
-                self.wait(0.5)
+                self.wait(0.5 + extra_wait)
 
                 # Apply sigmoid
                 a_val = sigmoid(z_val)
@@ -159,11 +178,11 @@ class NeuralNetworkBasics(Scene):
                 z_res_duplicator = z_res.copy()
                 self.play(TransformMatchingShapes(z_res_duplicator, sigma_z_ins), FadeIn(sigma_expr_left, sigma_func_left, sigma_func_right, sigma_expr_eq_sign))
                 self.add(sigma_z_ins); self.remove(z_res_duplicator)
-                self.wait(0.3)
+                self.wait(0.3 + extra_wait * 7)
                 sigma_func_group_animator = sigma_func_group.copy()
                 self.play(Transform(sigma_func_group_animator, sigma_res))
                 self.add(sigma_res); self.remove(sigma_func_group_animator)
-                self.wait(0.5)
+                self.wait(0.5 + extra_wait * 3)
 
                 # 4) Move this activation into the next neuron
                 a_prev = DecimalNumber(a_val, num_decimal_places=2).move_to(to_neuron.get_center())
@@ -187,12 +206,22 @@ class NeuralNetworkBasics(Scene):
                 activation_vals.append(a_val)
                 z_labels.add(z_group)
                 z_vals.append(z_val)
-                self.wait(0.5)
+                self.wait(0.5 + extra_wait * 3)
 
             self.wait(1)
 
         # Run forward propagation
-        animate_forward_prop(2.00)
+        animate_forward_prop(2.00, True)
+        self.wait(2)
+
+        self.play(FadeOut(neural_network, weight_groups, activations, z_labels))
+        self.wait(1)
+        cost_function = Text("Cost Function")
+        self.play(Write(cost_function))
+        self.wait(2)
+        self.play(FadeOut(cost_function))
+        self.wait(1)
+        self.play(FadeIn(neural_network, weight_groups, activations, z_labels))
         self.wait(2)
 
         def animate_cost_calculation(expected_output):
@@ -203,7 +232,7 @@ class NeuralNetworkBasics(Scene):
             expected[1].next_to(expected[0], RIGHT, buff=0.3)
             expected.move_to(UP * 1.5)
             self.play(Write(expected))
-            self.wait(1)
+            self.wait(5)
             expected_val_copy_to_move = expected[1].copy()
 
             cost_label = MathTex(r"C =")
@@ -227,7 +256,7 @@ class NeuralNetworkBasics(Scene):
             self.remove(expected_val_copy_to_move, output_copy_to_move)
 
 
-            self.wait(2)
+            self.wait(4)
             expr_copy = expr.copy()
             self.play(
                 Transform(expr_copy, cost_res),
@@ -236,10 +265,15 @@ class NeuralNetworkBasics(Scene):
             self.add(cost_res)
             self.remove(expr_copy)
 
-            self.wait(2)
+            self.wait(7)
             self.play(FadeOut(cost_group, expected))
 
         animate_cost_calculation(1.00)
+        self.wait(5)
+        self.play(FadeOut(neural_network, weight_groups, activations, z_labels))
+        self.wait(2)
+        self.play(FadeIn(neural_network, weight_groups, activations, z_labels))
+        self.wait(4)
 
         learning_rate_group = VGroup(
             MathTex(r"\eta ="),
@@ -249,7 +283,7 @@ class NeuralNetworkBasics(Scene):
         learning_rate_group[1].next_to(learning_rate_group[0], RIGHT, buff=0.3)
         learning_rate_group.scale(0.8).to_corner(UL)
         self.play(Write(learning_rate_group))
-        self.wait(2)
+        self.wait(10)
 
         dc_dw_i_spacing = [0.2, 0.2, 0.1, 0.1, 0, 0, 0.1, 0.1, 0.2, 0.2]
         dc_dw_n_spacing = [0.2, 0.2, 0.1, 0.1, 0, 0, 0.1, 0.1, 0, 0.1, 0.1, 0, 0.2, 0.2]
@@ -290,7 +324,7 @@ class NeuralNetworkBasics(Scene):
             w_gradient_solve_animator = w_gradient_eq[2:13].copy()
 
             self.play(Write(w_gradient_eq[0]), Write(w_gradient_eq[1]))
-            self.wait(2)
+            self.wait(6)
             self.play(a_i_min_1_mover.animate.move_to(w_gradient_eq[2]))
             self.add(w_gradient_eq[2]); self.remove(a_i_min_1_mover)
             self.play(Write(w_gradient_eq[3]))
@@ -308,7 +342,7 @@ class NeuralNetworkBasics(Scene):
             self.wait(1)
             self.play(w_gradient_solve_animator.animate.become(w_gradient_eq[14]))
             self.add(w_gradient_eq[14]); self.remove(w_gradient_solve_animator)
-            self.wait(3)
+            self.wait(1)
 
             w_mover = weight_groups[-1][1].copy()
             w_gradient_val_mover = w_gradient_val.copy()
@@ -351,7 +385,7 @@ class NeuralNetworkBasics(Scene):
             self.wait(1)
             self.play(w_change_solve_animator.animate.become(w_change_eq[8]))
             self.add(w_change_eq[8]); self.remove(w_change_solve_animator)
-            self.wait(2)
+            self.wait(11)
 
             w_mover.move_to(weight_groups[-1][1])
             z_i_mover.move_to(z_labels[-1][1])
@@ -453,7 +487,7 @@ class NeuralNetworkBasics(Scene):
                 self.wait(1)
                 self.play(w_gradient_solve_animator.animate.become(w_gradient_eq[10]))
                 self.add(w_gradient_eq[10]); self.remove(w_gradient_solve_animator)
-                self.wait(3)
+                self.wait(1)
 
                 w_mover = weight_groups[i][1].copy()
                 w_gradient_val_mover = w_gradient_val.copy()
@@ -548,9 +582,46 @@ class NeuralNetworkBasics(Scene):
                 self.play(FadeOut(w_gradient_eq, w_change_eq))
 
         animate_backward_prop(1.00)
+        self.wait(15)
+        animate_forward_prop(2.00, False)
         self.wait(2)
-        animate_forward_prop(2.00)
-        self.wait(2)
+        animate_cost_calculation(1.00)
+        self.play(FadeOut(neural_network, weight_groups, activations, z_labels, learning_rate_group))
+        self.wait(1)
+        topics_learned = VGroup(
+            Text("Neural Networks"),
+            Text("Gradient Descent")
+        )
+        topics_learned[1].next_to(topics_learned[0], DOWN, buff=0.5)
+        topics_learned.move_to(ORIGIN)
+        self.play(Write(topics_learned[0]))
+        self.wait(1)
+        self.play(Write(topics_learned[1]))
+        self.wait(1)
+        self.play(FadeOut(topics_learned))
+
+        # Title
+        sources = Text("Sources").to_edge(UP, buff=0.5)
+        ul = Underline(sources)
+
+        # Items (manual bullets)
+        item1 = Text(
+            "• 3Blue1Brown Neural Networks Series Videos 1–4\n"
+            "(https://www.youtube.com/playlist?list=PLZHQObOWTQDNU6R1_67000Dx_ZCJB-3pi)",
+            font_size=28
+        ).scale_to_fit_width(config.frame_width - 1)
+
+        item2 = Text("• ChatGPT (For Manim help)", font_size=28)
+
+        # Group and arrange items
+        all_sources = VGroup(item1, item2).arrange(DOWN, aligned_edge=LEFT, buff=0.3)
+        all_sources.next_to(sources, DOWN, buff=0.5)
+
+        # Play animations
+        self.play(Write(sources), Create(ul))
+        self.play(Write(all_sources))
+        self.wait()
+
 
 
 def render_manim():

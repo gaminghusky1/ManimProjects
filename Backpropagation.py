@@ -16,7 +16,7 @@ class Backprop(Scene):
         self.play(FadeOut(goal))
         method = Text("Backpropagation", font_size=72)
         self.play(FadeIn(method))
-        self.wait(2)
+        self.wait(4)
         self.play(FadeOut(method))
 
         # Speak - weights are only thing we can actually change
@@ -25,6 +25,7 @@ class Backprop(Scene):
         text_dc_dw = Text("Gradient: ").next_to(dc_dw, LEFT, buff=0.3)
         dc_dw_group = VGroup(text_dc_dw, dc_dw).move_to(ORIGIN)
         self.play(Write(dc_dw_group))
+        self.wait(4)
         self.play(dc_dw_group.animate.to_corner(UL), run_time=1)
 
         # Recall forward prop functions
@@ -52,15 +53,15 @@ class Backprop(Scene):
         self.play(Write(z_group))
         self.play(Write(a_group))
         self.play(Write(c_group))
-        self.wait(2)
+        self.wait(4)
 
         # Use TransformMatchingShapes with expressions that share structure
         self.play(TransformMatchingShapes(z_label, dz_dw_label), z_func.animate.become(dz_dw), run_time=2)
-        self.wait(1)
+        self.wait(5)
         self.play(TransformMatchingShapes(a_label, da_dz_label), TransformMatchingShapes(a_func, da_dz), run_time=2)
-        self.wait(1)
-        self.play(TransformMatchingShapes(c_label, dc_da_label), TransformMatchingShapes(c_func, dc_da), run_time=2)
         self.wait(3)
+        self.play(TransformMatchingShapes(c_label, dc_da_label), TransformMatchingShapes(c_func, dc_da), run_time=2)
+        self.wait(8)
 
         eq_sign = MathTex("=").next_to(dc_dw, RIGHT, buff=0.3)
         self.remove(z_func)
@@ -101,7 +102,7 @@ class Backprop(Scene):
 
 
         self.play(Write(dc_dw), Write(eq_sign))
-        self.wait(1)
+        self.wait(6)
         self.play(TransformMatchingShapes(dc_da_label_mover, dc_da_label_in_chain))
         self.wait(1)
         self.play(da_dz_label_mover.animate.move_to(da_dz_label_in_chain))
@@ -148,6 +149,7 @@ class Backprop(Scene):
 
         offset_to_origin = ORIGIN - new_dc_dw_eq.get_center()
         self.play(dc_dw.animate.become(MathTex(r"\frac{\partial C}{\partial w_n}").move_to(dc_dw.get_center() + offset_to_origin)), eq_sign.animate.shift(offset_to_origin))
+        self.wait(2)
         new_dc_dw.shift(offset_to_origin)
 
         dz_dw_mover = new_dc_dw[0].copy().move_to(dz_dw, aligned_edge=RIGHT)
@@ -158,14 +160,16 @@ class Backprop(Scene):
         self.play(Create(new_dc_dw[1]))
         self.add(new_dc_dw[0])
         self.remove(dz_dw_mover)
+        self.wait(1)
         self.play(da_dz_mover.animate.move_to(new_dc_dw[2]))
         self.play(Create(new_dc_dw[3]))
         self.add(new_dc_dw[2])
         self.remove(da_dz_mover)
+        self.wait(2)
         self.play(dc_da_mover.animate.move_to(new_dc_dw[4]))
         self.add(new_dc_dw[4])
         self.remove(dc_da_mover)
-        self.wait(1)
+        self.wait(2)
 
         self.play(FadeOut(dz_dw_group, da_dz_group, dc_da_group))
         self.wait(3)
@@ -176,12 +180,12 @@ class Backprop(Scene):
         dc_dw.become(MathTex(r"\frac{\partial C}{\partial w_i}").move_to(dc_dw.get_center()))
 
         self.play(FadeIn(chain_rule_group))
-        self.wait(1)
+        self.wait(4)
         self.play(
             dz_dw_label_in_chain.animate.become(MathTex(r"\frac{\partial z_i}{\partial a_{i - 1}").next_to(da_dz_label_in_chain, RIGHT, buff=0.1)),
             dc_dw.animate.become(MathTex(r"\frac{\partial C}{\partial a_{i - 1}}").move_to(dc_dw.get_center()))
         )
-        self.wait(2)
+        self.wait(5)
         self.play(FadeOut(chain_rule_group))
 
         dz_da_label = MathTex(r"\frac{\partial z_i}{\partial a_{i - 1}} ")
@@ -195,11 +199,11 @@ class Backprop(Scene):
         z_func = MathTex(r"= a_{i - 1} \cdot w_i").next_to(z_label, RIGHT, buff=0.3)
         z_group = VGroup(z_label, z_func).move_to(ORIGIN)
         self.play(FadeIn(z_group))
-        self.wait(1)
+        self.wait(2)
         self.play(TransformMatchingShapes(z_label, dz_da_label), z_func.animate.become(dz_da))
         self.add(dz_da_label, dz_da)
         self.remove(z_label, z_func)
-        self.wait(2)
+        self.wait(5)
         self.play(FadeOut(dz_da_label, dz_da))
 
         eq_sign.next_to(new_dc_dw, LEFT, buff=0.3)
@@ -208,7 +212,9 @@ class Backprop(Scene):
         self.play(FadeIn(new_dc_dw_eq))
         self.wait(1)
         self.play(new_dc_dw_eq[0].animate.become(MathTex(r"\frac{\partial C}{\partial a_{n - 1}}").next_to(eq_sign, LEFT, buff=0.3)), new_dc_dw[0].animate.become(MathTex(r"w_i").move_to(new_dc_dw[0].get_center())))
-        self.wait(2)
+        self.wait(5)
+        self.play(Circumscribe(new_dc_dw[4], stroke_width=2), run_time=1)
+        self.wait(6)
         self.play(FadeOut(new_dc_dw_eq))
 
         final_eqs = VGroup(
@@ -224,13 +230,13 @@ class Backprop(Scene):
         self.play(Write(final_eqs), run_time=2)
         self.wait(2)
         self.play(Circumscribe(final_eqs[0], stroke_width=2), run_time=1)
-        self.wait(3)
+        self.wait(4)
         self.play(Circumscribe(final_eqs[1], stroke_width=2), run_time=1)
-        self.wait(3)
+        self.wait(5)
         self.play(Circumscribe(final_eqs[2], stroke_width=2), run_time=1)
-        self.wait(3)
+        self.wait(4)
         self.play(Circumscribe(final_eqs[3], stroke_width=2), run_time=1)
-        self.wait(3)
+        self.wait(8)
 
         self.play(FadeOut(final_eqs))
         self.wait(2)

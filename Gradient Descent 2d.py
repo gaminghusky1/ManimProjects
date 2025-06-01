@@ -89,7 +89,7 @@ class GradientDescent2d(Scene):
                 x_val.get_value() + math.sqrt(1 / (1 + d_func(x_val.get_value()) ** 2))
             ]
         ))
-        self.wait(1)
+        self.wait(6)
 
         # Show ∇C and value
         self.play(
@@ -98,7 +98,7 @@ class GradientDescent2d(Scene):
             run_time=1
         )
 
-        self.wait(1)
+        self.wait(8)
 
         # Show Δx and η
         self.play(
@@ -136,7 +136,6 @@ class GradientDescent2d(Scene):
 
         # 8) Wait until converged
         self.wait_until(lambda: self.converged)
-        self.wait(1)
 
         scene_group = VGroup(
             axes,
@@ -189,7 +188,8 @@ class GradientDescent2d(Scene):
         dot.add_updater(gradient_step)
 
         self.wait_until(lambda: self.converged)
-        self.wait(1)
+        self.wait(15)
+        self.play(FadeOut(*self.mobjects))
 
 
 def render_manim():
