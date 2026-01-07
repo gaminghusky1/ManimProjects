@@ -55,7 +55,7 @@ class ExplainGradientDescent(Scene):
             ("Next position", 0, DOWN, 8),
             ("Current position", 2, UP, 6),
             ("Gradient", 5, UP, 11),
-            ("Learning rate", 4, DOWN, 25),
+            ("Learning rate", 4, DOWN, 28),
         ]
 
         for label_text, idx, direction, wait_time in terms:
@@ -65,6 +65,7 @@ class ExplainGradientDescent(Scene):
             self.wait(wait_time)
 
         self.play(FadeOut(*self.mobjects))
+        self.wait(2)
 
 
 def render_manim():
